@@ -40,8 +40,11 @@ public class Produit {
 
     public void setPrixUnitaire(double prixUnitaire) {
         this.prixUnitaire = prixUnitaire;
+    } 
+    
+    public int getSeuilMin() {
+        return seuilMin;
     }
-
     public int getQuantiteStock() {
         return quantiteStock;
     }
