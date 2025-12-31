@@ -1,10 +1,13 @@
 package gestionstock.service;
 
-import gestionstock.model.*;
-
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
+import gestionstock.service.LoggerService;
+import gestionstock.model.Mouvement;
+import gestionstock.model.Produit;
+import gestionstock.model.TypeMouvement;
+import gestionstock.model.Utilisateur;
 
 public class StockService {
 

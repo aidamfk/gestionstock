@@ -1,0 +1,23 @@
+╔══════════════════════════════════════════════════════════════╗
+║        HISTORIQUE DES OPÉRATIONS - GESTION DE STOCK         ║
+║              Généré le: 31/12/2025 23:53:01                ║
+╚══════════════════════════════════════════════════════════════╝
+
+[31/12/2025 23:53:01] SYSTÈME > INITIALISATION
+   Détails: 3 produits ajoutés au système
+
+[31/12/2025 23:53:25] admin > CONNEXION RÉUSSIE
+   Détails: Utilisateur: admin | Rôle: ADMIN
+
+[31/12/2025 23:53:40] admin > CONSULTATION
+   Détails: Historique complet des mouvements
+
+[31/12/2025 23:53:56] admin > CONSULTATION
+   Détails: État du stock complet
+
+[31/12/2025 23:54:48] admin > AJOUT PRODUIT
+   Détails: Code: P005 | "TELEPHONE"
+
+[31/12/2025 23:54:55] admin > DÉCONNEXION
+   Détails: Utilisateur: admin
+

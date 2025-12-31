@@ -3,14 +3,23 @@ package gestionstock.main;
 import gestionstock.model.*;
 import gestionstock.service.StockService;
 import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MenuPrincipal {
 
     private static StockService service = new StockService();
     private static Scanner scanner = new Scanner(System.in);
     private static Utilisateur utilisateurConnecte = null;
+    private static final String LOG_FILE = "historique_operations.txt";
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     public static void main(String[] args) {
+        // Initialiser le fichier log
+        initLog();
+        
         // Initialiser quelques données de test
         initialiserDonnees();
         
@@ -18,6 +27,7 @@ public class MenuPrincipal {
         System.out.println("║   SYSTÈME DE GESTION DE STOCK             ║");
         System.out.println("║   Version 1.0 - 2025                      ║");
         System.out.println("╚════════════════════════════════════════════╝");
+        System.out.println("\n✓ Historique sauvegardé dans: " + LOG_FILE + "\n");
         
         // Authentification
         if (!authentifier()) {
@@ -43,7 +53,9 @@ public class MenuPrincipal {
                     break;
                 case 0:
                     continuer = false;
+                    log("DÉCONNEXION", "Utilisateur: " + utilisateurConnecte.getLogin());
                     System.out.println("\n✓ Déconnexion réussie. Au revoir " + utilisateurConnecte.getLogin() + "!");
+                    System.out.println("✓ Historique sauvegardé dans: " + LOG_FILE);
                     break;
                 default:
                     System.out.println("✗ Choix invalide!");
@@ -53,13 +65,35 @@ public class MenuPrincipal {
         scanner.close();
     }
 
+    private static void initLog() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE, false))) {
+            writer.println("╔══════════════════════════════════════════════════════════════╗");
+            writer.println("║        HISTORIQUE DES OPÉRATIONS - GESTION DE STOCK         ║");
+            writer.println("║              Généré le: " + dateFormat.format(new Date()) + "                ║");
+            writer.println("╚══════════════════════════════════════════════════════════════╝");
+            writer.println();
+        } catch (Exception e) {
+            System.err.println("Erreur log: " + e.getMessage());
+        }
+    }
+
+    private static void log(String operation, String details) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE, true))) {
+            String user = utilisateurConnecte != null ? utilisateurConnecte.getLogin() : "SYSTÈME";
+            writer.println("[" + dateFormat.format(new Date()) + "] " + user + " > " + operation);
+            if (details != null && !details.isEmpty()) {
+                writer.println("   Détails: " + details);
+            }
+            writer.println();
+        } catch (Exception e) {
+            // Ignore
+        }
+    }
+
     private static void initialiserDonnees() {
-        // Créer des catégories
         Categorie catInfo = new Categorie(1, "Informatique");
         Categorie catBureau = new Categorie(2, "Bureau");
-        Categorie catElectro = new Categorie(3, "Électronique");
         
-        // Créer des produits de test
         Produit p1 = new Produit("P001", "Clavier Sans Fil", 2500, 15, 5, catInfo);
         Produit p2 = new Produit("P002", "Souris Optique", 1200, 8, 3, catInfo);
         Produit p3 = new Produit("P003", "Cahier A4", 150, 50, 10, catBureau);
@@ -67,6 +101,8 @@ public class MenuPrincipal {
         service.ajouterProduit(p1);
         service.ajouterProduit(p2);
         service.ajouterProduit(p3);
+        
+        log("INITIALISATION", "3 produits ajoutés au système");
     }
 
     private static boolean authentifier() {
@@ -76,18 +112,20 @@ public class MenuPrincipal {
         System.out.print("Mot de passe: ");
         String motDePasse = scanner.nextLine();
         
-        // Utilisateurs de test (normalement vérifiés en base de données)
         if (login.equals("admin") && motDePasse.equals("admin")) {
             utilisateurConnecte = new Utilisateur(1, "admin", "admin", "ADMIN");
             System.out.println("\n✓ Connexion réussie! Bienvenue " + login + " (Administrateur)");
+            log("CONNEXION RÉUSSIE", "Utilisateur: " + login + " | Rôle: ADMIN");
             return true;
         } else if (login.equals("user") && motDePasse.equals("user")) {
             utilisateurConnecte = new Utilisateur(2, "user", "user", "UTILISATEUR");
             System.out.println("\n✓ Connexion réussie! Bienvenue " + login + " (Utilisateur)");
+            log("CONNEXION RÉUSSIE", "Utilisateur: " + login + " | Rôle: UTILISATEUR");
             return true;
         }
         
         System.out.println("\n✗ Login ou mot de passe incorrect!");
+        log("CONNEXION ÉCHOUÉE", "Login: " + login);
         return false;
     }
 
@@ -115,23 +153,12 @@ public class MenuPrincipal {
             int choix = lireEntier("Votre choix: ");
             
             switch (choix) {
-                case 1:
-                    ajouterProduit();
-                    break;
-                case 2:
-                    modifierProduit();
-                    break;
-                case 3:
-                    supprimerProduit();
-                    break;
-                case 4:
-                    rechercherProduit();
-                    break;
-                case 0:
-                    retour = true;
-                    break;
-                default:
-                    System.out.println("✗ Choix invalide!");
+                case 1: ajouterProduit(); break;
+                case 2: modifierProduit(); break;
+                case 3: supprimerProduit(); break;
+                case 4: rechercherProduit(); break;
+                case 0: retour = true; break;
+                default: System.out.println("✗ Choix invalide!");
             }
         }
     }
@@ -141,16 +168,13 @@ public class MenuPrincipal {
         
         System.out.print("Code produit: ");
         String code = scanner.nextLine();
-        
         System.out.print("Désignation: ");
         String designation = scanner.nextLine();
-        
         double prix = lireDouble("Prix unitaire: ");
         int quantite = lireEntier("Quantité initiale: ");
         int seuil = lireEntier("Seuil minimal: ");
         
-        System.out.print("ID Catégorie (1=Informatique, 2=Bureau, 3=Électronique): ");
-        int idCat = lireEntier("");
+        int idCat = lireEntier("ID Catégorie (1=Informatique, 2=Bureau, 3=Électronique): ");
         String libelleCat = idCat == 1 ? "Informatique" : idCat == 2 ? "Bureau" : "Électronique";
         Categorie cat = new Categorie(idCat, libelleCat);
         
@@ -158,6 +182,9 @@ public class MenuPrincipal {
         
         if (service.ajouterProduit(p)) {
             System.out.println("✓ Produit ajouté avec succès!");
+            log("AJOUT PRODUIT", "Code: " + code + " | " + designation);
+        } else {
+            log("AJOUT PRODUIT ÉCHOUÉ", "Code: " + code + " (déjà existant)");
         }
     }
 
@@ -175,17 +202,13 @@ public class MenuPrincipal {
         System.out.println("Produit actuel: " + p);
         System.out.print("Nouvelle désignation (Entrée pour garder): ");
         String newDesignation = scanner.nextLine();
-        if (newDesignation.isEmpty()) {
-            newDesignation = p.getDesignation();
-        }
+        if (newDesignation.isEmpty()) newDesignation = p.getDesignation();
         
-        System.out.print("Nouveau prix (0 pour garder): ");
-        double newPrix = lireDouble("");
-        if (newPrix == 0) {
-            newPrix = p.getPrixUnitaire();
-        }
+        double newPrix = lireDouble("Nouveau prix (0 pour garder): ");
+        if (newPrix == 0) newPrix = p.getPrixUnitaire();
         
         service.modifierProduit(code, newDesignation, newPrix);
+        log("MODIFICATION PRODUIT", "Code: " + code);
     }
 
     private static void supprimerProduit() {
@@ -204,7 +227,12 @@ public class MenuPrincipal {
         String confirmation = scanner.nextLine();
         
         if (confirmation.equalsIgnoreCase("oui")) {
-            service.supprimerProduit(code);
+            boolean succes = service.supprimerProduit(code);
+            if (succes) {
+                log("SUPPRESSION PRODUIT", "Code: " + code);
+            } else {
+                log("SUPPRESSION ÉCHOUÉE", "Code: " + code + " (a des mouvements)");
+            }
         } else {
             System.out.println("✗ Suppression annulée.");
         }
@@ -223,8 +251,10 @@ public class MenuPrincipal {
             System.out.println("  Prix: " + p.getPrixUnitaire() + " DA");
             System.out.println("  Stock: " + p.getQuantiteStock());
             System.out.println("  Seuil min: " + p.getSeuilMin());
+            log("RECHERCHE PRODUIT", "Code: " + code + " (Trouvé)");
         } else {
             System.out.println("✗ Produit introuvable!");
+            log("RECHERCHE PRODUIT", "Code: " + code + " (Introuvable)");
         }
     }
 
@@ -239,17 +269,10 @@ public class MenuPrincipal {
             int choix = lireEntier("Votre choix: ");
             
             switch (choix) {
-                case 1:
-                    enregistrerEntree();
-                    break;
-                case 2:
-                    enregistrerSortie();
-                    break;
-                case 0:
-                    retour = true;
-                    break;
-                default:
-                    System.out.println("✗ Choix invalide!");
+                case 1: enregistrerEntree(); break;
+                case 2: enregistrerSortie(); break;
+                case 0: retour = true; break;
+                default: System.out.println("✗ Choix invalide!");
             }
         }
     }
@@ -270,6 +293,7 @@ public class MenuPrincipal {
         
         if (service.entreeStock(p, quantite, utilisateurConnecte)) {
             System.out.println("✓ Entrée enregistrée! Nouveau stock: " + p.getQuantiteStock());
+            log("ENTRÉE DE STOCK", "Produit: " + code + " | Qté: +" + quantite + " | Stock: " + p.getQuantiteStock());
         }
     }
 
@@ -287,8 +311,13 @@ public class MenuPrincipal {
         System.out.println("Produit: " + p.getDesignation() + " (Stock actuel: " + p.getQuantiteStock() + ")");
         int quantite = lireEntier("Quantité à retirer: ");
         
+        int stockAvant = p.getQuantiteStock();
         if (service.sortieStock(p, quantite, utilisateurConnecte)) {
             System.out.println("✓ Sortie enregistrée! Nouveau stock: " + p.getQuantiteStock());
+            String alerte = p.getQuantiteStock() < p.getSeuilMin() ? " ⚠️ STOCK FAIBLE!" : "";
+            log("SORTIE DE STOCK", "Produit: " + code + " | Qté: -" + quantite + " | Stock: " + p.getQuantiteStock() + alerte);
+        } else {
+            log("SORTIE ÉCHOUÉE", "Produit: " + code + " | Demandé: " + quantite + " | Disponible: " + stockAvant);
         }
     }
 
@@ -305,23 +334,12 @@ public class MenuPrincipal {
             int choix = lireEntier("Votre choix: ");
             
             switch (choix) {
-                case 1:
-                    afficherStock();
-                    break;
-                case 2:
-                    afficherStocksFaibles();
-                    break;
-                case 3:
-                    afficherHistorique();
-                    break;
-                case 4:
-                    afficherHistoriqueParProduit();
-                    break;
-                case 0:
-                    retour = true;
-                    break;
-                default:
-                    System.out.println("✗ Choix invalide!");
+                case 1: afficherStock(); break;
+                case 2: afficherStocksFaibles(); break;
+                case 3: afficherHistorique(); break;
+                case 4: afficherHistoriqueParProduit(); break;
+                case 0: retour = true; break;
+                default: System.out.println("✗ Choix invalide!");
             }
         }
     }
@@ -331,11 +349,13 @@ public class MenuPrincipal {
         System.out.println("║                    ÉTAT DU STOCK                               ║");
         System.out.println("╚════════════════════════════════════════════════════════════════╝");
         service.afficherStock();
+        log("CONSULTATION", "État du stock complet");
     }
 
     private static void afficherStocksFaibles() {
         System.out.println();
         service.afficherStocksFaibles();
+        log("CONSULTATION", "Stocks faibles");
     }
 
     private static void afficherHistorique() {
@@ -343,6 +363,7 @@ public class MenuPrincipal {
         System.out.println("║              HISTORIQUE DES MOUVEMENTS                         ║");
         System.out.println("╚════════════════════════════════════════════════════════════════╝");
         service.afficherMouvements();
+        log("CONSULTATION", "Historique complet des mouvements");
     }
 
     private static void afficherHistoriqueParProduit() {
@@ -352,15 +373,14 @@ public class MenuPrincipal {
         
         System.out.println("\n═══ Mouvements du produit " + code + " ═══");
         service.afficherMouvementsParProduit(code);
+        log("CONSULTATION", "Historique produit: " + code);
     }
 
-    // Méthodes utilitaires pour la saisie sécurisée
     private static int lireEntier(String message) {
         while (true) {
             try {
                 System.out.print(message);
-                String input = scanner.nextLine();
-                return Integer.parseInt(input);
+                return Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("✗ Veuillez entrer un nombre entier valide!");
             }
@@ -371,8 +391,7 @@ public class MenuPrincipal {
         while (true) {
             try {
                 System.out.print(message);
-                String input = scanner.nextLine();
-                return Double.parseDouble(input);
+                return Double.parseDouble(scanner.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("✗ Veuillez entrer un nombre décimal valide!");
             }
