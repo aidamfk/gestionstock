@@ -10,7 +10,7 @@ import gestionstock.model.Utilisateur;
 import java.util.Date;
 import java.util.List;
 
-public class StockService {
+public class StockService {//REGLE DE GESTION
 
     private ProduitDAO produitDAO = new ProduitDAO();
     private MouvementDAO mouvementDAO = new MouvementDAO();
@@ -139,6 +139,10 @@ public class StockService {
         for (Mouvement m : mouvements) {
             System.out.println(m);
         }
+    }
+    
+    public Produit rechercherProduit(String code) {
+        return produitDAO.findByCode(code);
     }
 
     public void afficherMouvementsParProduit(String codeProduit) {

@@ -40,6 +40,8 @@ public class MenuPrincipal {
                 case 6 -> service.afficherStock();
                 case 7 -> service.afficherMouvements();
                 case 8 -> afficherMouvementsParProduit();
+                case 9 -> afficherDetailsProduit();
+
                 case 0 -> {
                     continuer = false;
                     System.out.println("Au revoir.");
@@ -87,24 +89,47 @@ public class MenuPrincipal {
     ║ 6. Afficher le stock               ║
     ║ 7. Historique des mouvements       ║
     ║ 8. Mouvements par produit          ║
+    ║ 9. Détails d’un produit            ║
     ║ 0. Quitter                         ║
     ╚════════════════════════════════════╝
     """);
     }
 
-    /* ================= PRODUIT ================= */
 
     private static void ajouterProduit() {
         System.out.print("Code : ");
         String code = scanner.nextLine();
+
         System.out.print("Désignation : ");
         String des = scanner.nextLine();
+
         double prix = lireDouble("Prix : ");
         int qte = lireEntier("Quantité : ");
         int seuil = lireEntier("Seuil min : ");
 
-        Categorie cat = new Categorie(1, "Informatique"); // simplifié TP
+        System.out.println("""
+            Choisir la catégorie :
+            1. Informatique
+            2. Bureau
+            3. Électronique
+            """);
 
+        int choixCat = lireEntier("Votre choix : ");
+
+        Categorie cat;
+        if (choixCat == 1) {
+            cat = new Categorie(1, "Informatique");
+        } else if (choixCat == 2) {
+            cat = new Categorie(2, "Bureau");
+        } else if (choixCat == 3) {
+            cat = new Categorie(3, "Électronique");
+        } else {
+            System.out.println("Choix invalide → catégorie Informatique par défaut");
+            cat = new Categorie(1, "Informatique");
+        }
+
+
+        // === CRÉATION PRODUIT ===
         Produit p = new Produit(code, des, prix, qte, seuil, cat);
         service.ajouterProduit(p);
     }
@@ -161,6 +186,27 @@ public class MenuPrincipal {
             }
         }
     }
+    private static void afficherDetailsProduit() {
+        System.out.print("Code produit : ");
+        String code = scanner.nextLine();
+
+        Produit p = service.rechercherProduit(code);
+
+        if (p == null) {
+            System.out.println("Produit introuvable");
+            return;
+        }
+
+        System.out.println("===== DÉTAILS DU PRODUIT =====");
+        System.out.println("Code       : " + p.getCodeProduit());
+        System.out.println("Nom        : " + p.getDesignation());
+        System.out.println("Prix       : " + p.getPrixUnitaire());
+        System.out.println("Stock      : " + p.getQuantiteStock());
+        System.out.println("Seuil min  : " + p.getSeuilMin());
+        System.out.println("Catégorie  : " +
+                (p.getCategorie() != null ? p.getCategorie().getLibelle() : "Non chargée"));
+    }
+
 
     private static double lireDouble(String msg) {
         while (true) {

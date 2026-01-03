@@ -17,15 +17,16 @@ public class InitDB {
             """);
 
             st.execute("""
-                CREATE TABLE IF NOT EXISTS produit (
-                    codeProduit TEXT PRIMARY KEY,
-                    designation TEXT,
-                    prixUnitaire REAL,
-                    quantiteStock INTEGER,
-                    seuilMin INTEGER,
-                    idCategorie INTEGER
-                )
-            """);
+            	    CREATE TABLE IF NOT EXISTS produit (
+            	        codeProduit TEXT PRIMARY KEY,
+            	        designation TEXT,
+            	        prixUnitaire REAL,
+            	        quantiteStock INTEGER,
+            	        seuilMin INTEGER,
+            	        categorie TEXT
+            	    )
+            	""");
+
 
             st.execute("""
                 CREATE TABLE IF NOT EXISTS mouvement (

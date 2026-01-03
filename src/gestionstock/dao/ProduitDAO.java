@@ -27,6 +27,9 @@ public class ProduitDAO {
             ps.setInt(5, p.getSeuilMin());
             ps.setInt(6, p.getCategorie().getIdCategorie());
 
+
+
+
             ps.executeUpdate();
 
         } catch (Exception e) {
@@ -46,15 +49,33 @@ public class ProduitDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
+
+                int idCat = rs.getInt("idCategorie");
+
+                // TP style: simple category mapping
+                Categorie cat;
+                if (idCat == 1) {
+                    cat = new Categorie(1, "Informatique");
+                } else if (idCat == 2) {
+                    cat = new Categorie(2, "Bureau");
+                } else if (idCat == 3) {
+                    cat = new Categorie(3, "Électronique");
+                } else {
+                    cat = null;
+                }
+
                 return new Produit(
                         rs.getString("codeProduit"),
                         rs.getString("designation"),
                         rs.getDouble("prixUnitaire"),
                         rs.getInt("quantiteStock"),
                         rs.getInt("seuilMin"),
-                        null  
+                        cat
                 );
             }
+
+
+     
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -130,4 +151,4 @@ public class ProduitDAO {
         }
         return list;
     }
-}
+    }

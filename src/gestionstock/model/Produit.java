@@ -22,6 +22,8 @@ public class Produit {
         this.categorie = categorie;
     }
 
+    /* ================= GETTERS ================= */
+
     public String getCodeProduit() {
         return codeProduit;
     }
@@ -30,41 +32,54 @@ public class Produit {
         return designation;
     }
 
-    public void setDesignation(String designation) {
-        this.designation = designation;
-    }
-
     public double getPrixUnitaire() {
         return prixUnitaire;
     }
 
-    public void setPrixUnitaire(double prixUnitaire) {
-        this.prixUnitaire = prixUnitaire;
-    } 
-    
+    public int getQuantiteStock() {
+        return quantiteStock;
+    }
+
     public int getSeuilMin() {
         return seuilMin;
     }
-    public int getQuantiteStock() {
-        return quantiteStock;
+
+    public Categorie getCategorie() {
+        return categorie;
+    }
+
+    /* ================= SETTERS ================= */
+
+    public void setDesignation(String designation) {
+        this.designation = designation;
+    }
+
+    public void setPrixUnitaire(double prixUnitaire) {
+        this.prixUnitaire = prixUnitaire;
     }
 
     public void setQuantiteStock(int quantiteStock) {
         this.quantiteStock = quantiteStock;
     }
-    public Categorie getCategorie() {
-        return categorie;
+
+    // ✅ THIS WAS MISSING
+    public void setSeuilMin(int seuilMin) {
+        this.seuilMin = seuilMin;
     }
 
     public void setCategorie(Categorie categorie) {
         this.categorie = categorie;
     }
 
+    /* ================= AFFICHAGE ================= */
 
     @Override
     public String toString() {
         return codeProduit + " | " + designation +
                " | Prix: " + prixUnitaire +
-               " | Stock: " + quantiteStock;
+               " | Stock: " + quantiteStock +
+               " | Seuil: " + seuilMin +
+               " | Catégorie: " +
+               (categorie != null ? categorie.getLibelle() : "N/A");
     }
 }
