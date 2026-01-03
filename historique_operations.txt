@@ -1,23 +1,29 @@
 ╔══════════════════════════════════════════════════════════════╗
 ║        HISTORIQUE DES OPÉRATIONS - GESTION DE STOCK         ║
-║              Généré le: 31/12/2025 23:53:01                ║
+║              Généré le: 01/01/2026 10:59:20                ║
 ╚══════════════════════════════════════════════════════════════╝
 
-[31/12/2025 23:53:01] SYSTÈME > INITIALISATION
+[01/01/2026 10:59:20] SYSTÈME > INITIALISATION
    Détails: 3 produits ajoutés au système
 
-[31/12/2025 23:53:25] admin > CONNEXION RÉUSSIE
+[01/01/2026 10:59:31] admin > CONNEXION RÉUSSIE
    Détails: Utilisateur: admin | Rôle: ADMIN
 
-[31/12/2025 23:53:40] admin > CONSULTATION
-   Détails: Historique complet des mouvements
+[01/01/2026 10:59:54] admin > CONSULTATION
+   Détails: Stocks faibles
 
-[31/12/2025 23:53:56] admin > CONSULTATION
+[01/01/2026 11:00:41] admin > ENTRÉE DE STOCK
+   Détails: Produit: P002 | Qté: +23 | Stock: 31
+
+[01/01/2026 11:01:07] admin > CONSULTATION
    Détails: État du stock complet
 
-[31/12/2025 23:54:48] admin > AJOUT PRODUIT
-   Détails: Code: P005 | "TELEPHONE"
+[01/01/2026 11:01:25] admin > CONSULTATION
+   Détails: Historique complet des mouvements
 
-[31/12/2025 23:54:55] admin > DÉCONNEXION
+[01/01/2026 11:03:02] admin > CONSULTATION
+   Détails: Historique produit: P002
+
+[01/01/2026 11:04:08] admin > DÉCONNEXION
    Détails: Utilisateur: admin
 

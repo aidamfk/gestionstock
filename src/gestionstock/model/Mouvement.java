@@ -22,8 +22,14 @@ public class Mouvement {
     }
 
     public Produit getProduit() {
+    	
         return produit;
     }
+    public int getQuantite() { return quantite; }
+    public TypeMouvement getType() { return type; }
+    
+    public Utilisateur getUtilisateur() { return utilisateur; }
+
 
     public String toString() {
         return type + " | " + produit.getCodeProduit() + " | Qte: " + quantite;

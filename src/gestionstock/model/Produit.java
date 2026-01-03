@@ -52,6 +52,14 @@ public class Produit {
     public void setQuantiteStock(int quantiteStock) {
         this.quantiteStock = quantiteStock;
     }
+    public Categorie getCategorie() {
+        return categorie;
+    }
+
+    public void setCategorie(Categorie categorie) {
+        this.categorie = categorie;
+    }
+
 
     @Override
     public String toString() {

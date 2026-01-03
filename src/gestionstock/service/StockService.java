@@ -1,210 +1,154 @@
 package gestionstock.service;
 
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Vector;
-import gestionstock.service.LoggerService;
+import gestionstock.dao.MouvementDAO;
+import gestionstock.dao.ProduitDAO;
 import gestionstock.model.Mouvement;
 import gestionstock.model.Produit;
 import gestionstock.model.TypeMouvement;
 import gestionstock.model.Utilisateur;
 
+import java.util.Date;
+import java.util.List;
+
 public class StockService {
 
-    private Vector<Produit> produits = new Vector<>();
-    private Vector<Mouvement> mouvements = new Vector<>();
-    private int compteurMouvement = 1;
+    private ProduitDAO produitDAO = new ProduitDAO();
+    private MouvementDAO mouvementDAO = new MouvementDAO();
 
-    /**
-     * Ajoute un produit au stock
-     * Vérifie l'unicité du code produit
-     */
+    /* ===================== PRODUIT ===================== */
+
     public boolean ajouterProduit(Produit p) {
-        if (rechercherProduit(p.getCodeProduit()) != null) {
-            System.out.println("Erreur : Un produit avec ce code existe déjà !");
+        if (produitDAO.findByCode(p.getCodeProduit()) != null) {
+            System.out.println("Erreur : produit déjà existant");
             return false;
         }
-        produits.add(p);
-        System.out.println("Produit ajouté avec succès.");
+        produitDAO.insert(p);
+        System.out.println("Produit ajouté");
         return true;
     }
 
-    /**
-     * Recherche un produit par son code
-     */
-    public Produit rechercherProduit(String code) {
-        Iterator<Produit> it = produits.iterator();
-        while (it.hasNext()) {
-            Produit p = it.next();
-            if (p.getCodeProduit().equals(code)) {
-                return p;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Modifie les informations d'un produit (sauf le code)
-     */
     public boolean modifierProduit(String code, String newDesignation, double newPrix) {
-        Produit p = rechercherProduit(code);
-        if (p != null) {
-            p.setDesignation(newDesignation);
-            p.setPrixUnitaire(newPrix);
-            System.out.println("Produit modifié avec succès.");
-            return true;
+        Produit p = produitDAO.findByCode(code);
+        if (p == null) {
+            System.out.println("Produit introuvable");
+            return false;
         }
-        System.out.println("Erreur : Produit introuvable.");
-        return false;
+        p.setDesignation(newDesignation);
+        p.setPrixUnitaire(newPrix);
+        produitDAO.update(p);
+        System.out.println("Produit modifié");
+        return true;
     }
 
-    /**
-     * Vérifie si un produit a des mouvements associés
-     */
-    private boolean produitADesMouvements(String code) {
-        Iterator<Mouvement> it = mouvements.iterator();
-        while (it.hasNext()) {
-            if (it.next().getProduit().getCodeProduit().equals(code)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Supprime un produit (uniquement s'il n'a pas de mouvements)
-     */
     public boolean supprimerProduit(String code) {
-        if (produitADesMouvements(code)) {
-            System.out.println("Erreur : Impossible de supprimer un produit avec des mouvements associés.");
+        if (mouvementDAO.existsForProduit(code)) {
+            System.out.println("Impossible : produit lié à des mouvements");
             return false;
         }
-
-        Iterator<Produit> it = produits.iterator();
-        while (it.hasNext()) {
-            Produit p = it.next();
-            if (p.getCodeProduit().equals(code)) {
-                it.remove();
-                System.out.println("Produit supprimé avec succès.");
-                return true;
-            }
-        }
-        System.out.println("Erreur : Produit introuvable.");
-        return false;
+        produitDAO.delete(code);
+        System.out.println("Produit supprimé");
+        return true;
     }
 
-    /**
-     * Affiche l'état actuel du stock
-     */
     public void afficherStock() {
+        List<Produit> produits = produitDAO.findAll();
         if (produits.isEmpty()) {
-            System.out.println("Aucun produit en stock.");
+            System.out.println("Aucun produit");
             return;
         }
-        Iterator<Produit> it = produits.iterator();
-        while (it.hasNext()) {
-            System.out.println(it.next());
+        for (Produit p : produits) {
+            System.out.println(p);
         }
     }
 
-    /**
-     * Enregistre une entrée de stock
-     */
-    public boolean entreeStock(Produit p, int quantite, Utilisateur u) {
-        if (quantite <= 0) {
-            System.out.println("Erreur : La quantité doit être positive.");
+    /* ===================== MOUVEMENTS ===================== */
+
+    public boolean entreeStock(String codeProduit, int qte, Utilisateur u) {
+        if (qte <= 0) {
+            System.out.println("Quantité invalide");
             return false;
         }
-        
-        p.setQuantiteStock(p.getQuantiteStock() + quantite);
-        mouvements.add(new Mouvement(
-                compteurMouvement++, new Date(), quantite,
-                TypeMouvement.ENTREE, p, u
-        ));
-        System.out.println("Entrée de stock enregistrée : +" + quantite);
+
+        Produit p = produitDAO.findByCode(codeProduit);
+        if (p == null) {
+            System.out.println("Produit introuvable");
+            return false;
+        }
+
+        p.setQuantiteStock(p.getQuantiteStock() + qte);
+        produitDAO.update(p);
+
+        Mouvement m = new Mouvement(
+                0,
+                new Date(),
+                qte,
+                TypeMouvement.ENTREE,
+                p,
+                u
+        );
+        mouvementDAO.insert(m);
+
+        System.out.println("Entrée stock enregistrée");
         return true;
     }
 
-    /**
-     * Enregistre une sortie de stock
-     * Vérifie que le stock ne devient pas négatif
-     */
-    public boolean sortieStock(Produit p, int quantite, Utilisateur u) {
-        if (quantite <= 0) {
-            System.out.println("Erreur : La quantité doit être positive.");
+    public boolean sortieStock(String codeProduit, int qte, Utilisateur u) {
+        if (qte <= 0) {
+            System.out.println("Quantité invalide");
             return false;
         }
-        
-        if (p.getQuantiteStock() < quantite) {
-            System.out.println("Erreur : Stock insuffisant ! (Disponible : " 
-                + p.getQuantiteStock() + ")");
+
+        Produit p = produitDAO.findByCode(codeProduit);
+        if (p == null) {
+            System.out.println("Produit introuvable");
             return false;
         }
-        
-        p.setQuantiteStock(p.getQuantiteStock() - quantite);
-        mouvements.add(new Mouvement(
-                compteurMouvement++, new Date(), quantite,
-                TypeMouvement.SORTIE, p, u
-        ));
-        System.out.println("Sortie de stock enregistrée : -" + quantite);
-        
-        // Alerte si le stock passe sous le seuil minimal
+
+        if (p.getQuantiteStock() < qte) {
+            System.out.println("Stock insuffisant");
+            return false;
+        }
+
+        p.setQuantiteStock(p.getQuantiteStock() - qte);
+        produitDAO.update(p);
+
+        Mouvement m = new Mouvement(
+                0,
+                new Date(),
+                qte,
+                TypeMouvement.SORTIE,
+                p,
+                u
+        );
+        mouvementDAO.insert(m);
+
         if (p.getQuantiteStock() < p.getSeuilMin()) {
-            System.out.println("⚠️  ALERTE : Stock faible pour " + p.getDesignation() 
-                + " (Seuil : " + p.getSeuilMin() + ")");
+            System.out.println("⚠️ ALERTE : stock sous le seuil");
         }
-        
+
+        System.out.println("Sortie stock enregistrée");
         return true;
     }
 
-    /**
-     * Affiche tous les mouvements
-     */
     public void afficherMouvements() {
+        List<Mouvement> mouvements = mouvementDAO.findAll();
         if (mouvements.isEmpty()) {
-            System.out.println("Aucun mouvement enregistré.");
+            System.out.println("Aucun mouvement");
             return;
         }
-        Iterator<Mouvement> it = mouvements.iterator();
-        while (it.hasNext()) {
-            System.out.println(it.next());
+        for (Mouvement m : mouvements) {
+            System.out.println(m);
         }
     }
 
-    /**
-     * Affiche les mouvements d'un produit spécifique
-     */
     public void afficherMouvementsParProduit(String codeProduit) {
-        boolean trouve = false;
-        Iterator<Mouvement> it = mouvements.iterator();
-        while (it.hasNext()) {
-            Mouvement m = it.next();
-            if (m.getProduit().getCodeProduit().equals(codeProduit)) {
-                System.out.println(m);
-                trouve = true;
-            }
+        List<Mouvement> mouvements = mouvementDAO.findByProduit(codeProduit);
+        if (mouvements.isEmpty()) {
+            System.out.println("Aucun mouvement pour ce produit");
+            return;
         }
-        if (!trouve) {
-            System.out.println("Aucun mouvement pour ce produit.");
-        }
-    }
-    
-    /**
-     * Affiche les produits avec un stock faible
-     */
-    public void afficherStocksFaibles() {
-        System.out.println("=== PRODUITS AVEC STOCK FAIBLE ===");
-        boolean trouve = false;
-        Iterator<Produit> it = produits.iterator();
-        while (it.hasNext()) {
-            Produit p = it.next();
-            if (p.getQuantiteStock() < p.getSeuilMin()) {
-                System.out.println(p + " ⚠️ Sous le seuil (" + p.getSeuilMin() + ")");
-                trouve = true;
-            }
-        }
-        if (!trouve) {
-            System.out.println("Aucun stock faible détecté.");
+        for (Mouvement m : mouvements) {
+            System.out.println(m);
         }
     }
 }
