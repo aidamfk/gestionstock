@@ -8,7 +8,7 @@ import java.util.Vector;
 
 public class ProduitDAO {
 
-    /* ================= INSERT ================= */
+    /* ================= INSERT PRODUCT================= */
 
     public void insert(Produit p) {
         String sql = """
@@ -16,10 +16,11 @@ public class ProduitDAO {
             (codeProduit, designation, prixUnitaire, quantiteStock, seuilMin, idCategorie)
             VALUES (?, ?, ?, ?, ?, ?)
         """;
-
+//CONN ET  DBCON OUVRE CONNEXION
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
-
+ //EXECUTE REQUETE
+        	//REMPLIR PARAMETRE RECUOPPERE DONNER ET ENVOYER VERS DB
             ps.setString(1, p.getCodeProduit());
             ps.setString(2, p.getDesignation());
             ps.setDouble(3, p.getPrixUnitaire());
@@ -30,7 +31,7 @@ public class ProduitDAO {
 
 
 
-            ps.executeUpdate();
+            ps.executeUpdate();//ENVOYER A DB(just insert delet update
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -38,21 +39,24 @@ public class ProduitDAO {
     }
 
     /* ================= FIND BY CODE ================= */
+    // Exécute la requête SQL
+    // Si le code existe → retourne un Produit
+    // Si le code n'existe pas → retourne null
 
     public Produit findByCode(String code) {
         String sql = "SELECT * FROM produit WHERE codeProduit = ?";
-
+//we replace ? by code given by user 
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
 
             ps.setString(1, code);
             ResultSet rs = ps.executeQuery();
-
+//RS IS A LINE FOUNDED
             if (rs.next()) {
 
                 int idCat = rs.getInt("idCategorie");
 
-                // TP style: simple category mapping
+              
                 Categorie cat;
                 if (idCat == 1) {
                     cat = new Categorie(1, "Informatique");
@@ -63,7 +67,7 @@ public class ProduitDAO {
                 } else {
                     cat = null;
                 }
-
+//TRANSFORM LIGNE SQL INTO OBJECT JAVA (((ROLE OF DAO
                 return new Produit(
                         rs.getString("codeProduit"),
                         rs.getString("designation"),
@@ -83,18 +87,18 @@ public class ProduitDAO {
         return null;
     }
 
-    /* ================= UPDATE FULL PRODUCT ================= */
+    /* ================= UPDATE modify FULL PRODUCT ================= */
 
     public void update(Produit p) {
         String sql = """
             UPDATE produit
             SET designation = ?, prixUnitaire = ?, quantiteStock = ?, seuilMin = ?
-            WHERE codeProduit = ?
+            WHERE codeProduit = ? 
         """;
-
+//WHERE = SEARCH CODE SPICIFY
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
-
+//NUMBERS 1 TO 5 WILL REFFER TO EVERY VALEUR EN REQUETE SQL 1 =DESIGNATION
             ps.setString(1, p.getDesignation());
             ps.setDouble(2, p.getPrixUnitaire());
             ps.setInt(3, p.getQuantiteStock());
@@ -116,8 +120,8 @@ public class ProduitDAO {
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
 
-            ps.setString(1, code);
-            ps.executeUpdate();
+            ps.setString(1, code);//REMPLIS LE (?)
+            ps.executeUpdate();//EXCUTE
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,15 +130,16 @@ public class ProduitDAO {
 
     /* ================= FIND ALL ================= */
 
-    public Vector<Produit> findAll() {
+    public Vector<Produit> findAll(){
+    	//recuper tous product from bdd AND RETURN THEM INTO LIST OBJECT
         Vector<Produit> list = new Vector<>();
-        String sql = "SELECT * FROM produit";
+        String sql = "SELECT * FROM produit";//TAKE ALL LINE FROM TABLE PRODUCT
 
         try (Connection c = DBConnection.getConnection();
              Statement st = c.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+             ResultSet rs = st.executeQuery(sql)) {// SELECT =EXECUTEQUERY
 
-            while (rs.next()) {
+            while (rs.next()) {//PASS TO NEXT LINE  RETURN TRUE IF IT HAS A LINE 
                 Produit p = new Produit(
                         rs.getString("codeProduit"),
                         rs.getString("designation"),
@@ -143,12 +148,12 @@ public class ProduitDAO {
                         rs.getInt("seuilMin"),
                         null
                 );
-                list.add(p);
+                list.add(p);//ADD PRODUCT INTO THE LIST
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
+        return list;// SEND LIST TO SERVICE
     }
     }

@@ -78,8 +78,7 @@ public class Produit {
         return codeProduit + " | " + designation +
                " | Prix: " + prixUnitaire +
                " | Stock: " + quantiteStock +
-               " | Seuil: " + seuilMin +
-               " | Catégorie: " +
-               (categorie != null ? categorie.getLibelle() : "N/A");
+               " | Seuil: " + seuilMin ;
+              
     }
 }
